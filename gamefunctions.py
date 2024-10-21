@@ -2,26 +2,69 @@
 #Breydon Wolff
 #9/26/24
 
+"""
+Game Functions Module
+
+This module provides functions for a simple computer game. It includes
+functionality for greeting players, displaying a shop menu, purchasing
+items, generating random monsters, and displaying a shop menu.
+
+Functions:
+- print_welcome: Prints a welcome message to the player.
+- print_shop_menu: Displays a menu with items and their prices.
+- purchase_item: Handles the purchasing logic for items.
+- new_random_monster: Generates and returns a random monster.
+
+Typical usage example:
+
+    from gamefunctions import print_welcome
+    print_welcome("Player Name")
+"""
 import random
 
-def purchase_item(itemPrice: float, startingMoney: float, quantitytopurchase: int = 1):
-    
-    #Calculate cost for the requested ammount
+def purchase_item(itemPrice: float, startingMoney: float, quantitytopurchase: int = 1) -> tuple:
+    """
+    Handle the purchasing logic for items.
 
+    Parameters:
+        itemPrice (float): Price of a single item.
+        startingMoney (float): Amount of money the player has.
+        quantitytopurchase (int): Number of items to purchase (default is 1).
+
+    Returns:
+        tuple: A tuple containing the number of items purchased and the 
+               leftover money.
+
+    Example:
+        >>> purchase_item(2.5, 10, 3)
+        (4, 0.0)
+    """
+    # Calculate cost for the requested amount
     total_cost = itemPrice * quantitytopurchase
-    
-    #Figure out how many can be purchased
 
+    # Figure out how many can be purchased
     if total_cost > startingMoney:
         quantity_purchased = int(startingMoney // itemPrice)
         leftover_money = startingMoney - (quantity_purchased * itemPrice)
     else:
         quantity_purchased = quantitytopurchase
         leftover_money = startingMoney - total_cost
-    
+
     return quantity_purchased, leftover_money
 
-def new_random_monster():
+def new_random_monster() -> dict:
+    """
+    Generate and return a random monster.
+
+    Returns:
+        dict: A dictionary containing the monster's name, description, 
+              health, power, and money.
+
+    Example:
+        >>> monster = new_random_monster()
+        >>> monster['name']
+        'Goblin'  # This will vary as it is random
+    """
     monster_types = [
         {
             'name': 'Goblin',
@@ -47,21 +90,48 @@ def new_random_monster():
     ]
     
     # Randomly select a monster type
-
     selected_monster = random.choice(monster_types)
     return selected_monster
-
 # new function known as print_welcome, which prints a welcome message
 
 def print_welcome(name: str, width: int = 20):
-    """Print a welcome message centered within a specified width."""
+
+    """
+    Print a welcome message centered within a specified width.
+
+    Parameters:
+        name (str): The name of the player.
+        width (int): The width for centering the message (default is 20).
+
+    Returns:
+        None
+
+    Example:
+        >>> print_welcome("Jeff")
+        '      Hello, Jeff!      '
+    """
+    
     message = f"Hello, {name}!"
     print(message.center(width))
 
 # new function which outputs the shop menu
 
-def print_shop_menu(item1Name: str, item1Price: float, item2Name: str, item2Price: float):
-    """Print a shop menu listing two items with prices formatted."""
+def print_shop_menu(item1Name: str, item1Price: float, item2Name: str, item2Price: float) -> None:
+    """
+    Print a shop menu listing two items with prices formatted.
+
+    Parameters:
+        item1Name (str): Name of the first item.
+        item1Price (float): Price of the first item.
+        item2Name (str): Name of the second item.
+        item2Price (float): Price of the second item.
+
+    Returns:
+        None
+
+    Example:
+        >>> print_shop_menu("Apple", 1.5, "Pear", 2.0)
+    """
     border = "/" + "-" * 22 + "\\"
     item1_line = f"| {item1Name:<12}${item1Price:>6.2f} |"
     item2_line = f"| {item2Name:<12}${item2Price:>6.2f} |"
@@ -70,45 +140,28 @@ def print_shop_menu(item1Name: str, item1Price: float, item2Name: str, item2Pric
     print(item2_line)
     print(border.replace("/", "\\").replace("\\", "/"))
 
-# Demonstration of function calls
+# New function that demonstrates the use of the functions
 
-if __name__ == "__main__":
-
-    # Purchase item(s) test
+def test_functions():
+    """Run tests on the module's functions."""
+    # Test purchase_item
     num_purchased, leftover_money = purchase_item(1.5, 12, 4)
     print(f"Items Purchased: {num_purchased}, Money Remaining: {leftover_money}")
 
-    num_purchased, leftover_money = purchase_item(1.44, 2.34, 5)
-    print(f"Items Purchased: {num_purchased}, Money Remaining: {leftover_money}")
+    # Test new_random_monster
+    for _ in range(3):
+        my_monster = new_random_monster()
+        print(f"Monster: {my_monster['name']}, Health: {my_monster['health']}")
 
-    num_purchased, leftover_money = purchase_item(4.23, 25.27)
-    print(f"Items Purchased: {num_purchased}, Money Remaining: {leftover_money}")
-
-    # new_random_monster test
-
-    my_monster = new_random_monster()
-    print(f"Monster: {my_monster['name']}")
-    print(f"Description: {my_monster['description']}")
-    print(f"Health: {my_monster['health']}, Money: {my_monster['money']}")
-
-    my_monster = new_random_monster()
-    print(f"Monster: {my_monster['name']}")
-    print(f"Description: {my_monster['description']}")
-    print(f"Health: {my_monster['health']}, Money: {my_monster['money']}")
-    my_monster = new_random_monster()
-    print(f"Monster: {my_monster['name']}")
-    print(f"Description: {my_monster['description']}")
-    print(f"Health: {my_monster['health']}, Money: {my_monster['money']}")
-
-    #calling the new functions
-    
+    # Test print_welcome
     print_welcome("Jeff")
-    print_welcome("Audrey")
-    print_welcome("Maximiliano")
+    
+    # Test print_shop_menu
+    print_shop_menu("Apple", 1.5, "Pear", 2.0)
 
-    print_shop_menu("Apple", 31, "Pear", 1.234)
-    print_shop_menu("Egg", .23, "Bag of Oats", 12.34)
-    print_shop_menu("Grapes", 2.5, "Chocolate Bar", 5.0)
+if __name__ == "__main__":
+    test_functions()
+
 
 
 
