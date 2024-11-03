@@ -20,30 +20,39 @@ def get_user_choice() -> int:
                 print("Invalid choice. Please enter 1, 2, or 3.")
         except ValueError:
             print("Please enter a valid number.")
-
+            
 def fight_monster(current_hp: int, current_gold: float) -> (int, float):
     """Handle fighting a monster."""
     monster = new_random_monster()
     monster_health = monster['health']
-    
+
     print(f"You encounter a {monster['name']}! Health: {monster_health}")
 
     while current_hp > 0 and monster_health > 0:
-        damage_to_monster = random.randint(5, 10)
-        damage_to_player = random.randint(3, 8)
+        choice = combat_choice()  # Get player's choice to attack or run
 
-        monster_health -= damage_to_monster
-        current_hp -= damage_to_player
-        
-        print(f"You deal {damage_to_monster} damage to the {monster['name']}.")
-        print(f"The {monster['name']} deals {damage_to_player} damage to you.")
+        if choice == 1:  # Player chooses to attack
+            damage_to_monster = random.randint(5, 10)
+            damage_to_player = random.randint(3, 8)
 
-    if monster_health <= 0:
-        print(f"You defeated the {monster['name']}!")
-        current_gold += monster['money']
-    elif current_hp <= 0:
+            monster_health -= damage_to_monster
+            current_hp -= damage_to_player
+
+            print(f"You deal {damage_to_monster} damage to the {monster['name']}.")
+            print(f"The {monster['name']} deals {damage_to_player} damage to you.")
+
+            if monster_health <= 0:
+                print(f"You defeated the {monster['name']}!")
+                current_gold += monster['money']
+                break  # Exit the loop after defeating the monster
+
+        elif choice == 2:  # Player chooses to run
+            print("You successfully run away!")
+            break  # Exit the combat loop
+
+    if current_hp <= 0:
         print("You have been defeated.")
-    
+
     return current_hp, current_gold
 
 def sleep(current_hp: int, current_gold: float) -> (int, float):
