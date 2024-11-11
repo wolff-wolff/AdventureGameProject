@@ -1,9 +1,11 @@
 #Game.py
 #Breydon Wolff
-#10-16-24
+#11-09-24
 
-from gamefunctions import print_welcome, new_random_monster
+import json
+import os
 import random
+from gamefunctions import print_welcome, new_random_monster
 
 
 shop_items = [
@@ -11,6 +13,36 @@ shop_items = [
     {"name": "buckler", "type": "shield", "maxDurability": 6, "currentDurability": 6, "price": 30},
     {"name": "magic stone", "type": "consumable", "effect": "defeats one monster without loss of HP", "price": 20}
 ]
+
+
+def save_game(filename: str, current_hp: int, current_gold: float, inventory: list) -> None:
+    """Save the game state to a file in JSON format."""
+    game_data = {
+        'current_hp': current_hp,
+        'current_gold': current_gold,
+        'inventory': inventory
+    }
+
+    with open(filename, 'w') as file:
+        json.dump(game_data, file)
+    print(f"Game saved to {filename}.")
+
+
+def load_game(filename: str) -> (int, float, list):
+    """Load the game state from a file."""
+    if not os.path.exists(filename):
+        print("Save file does not exist. Starting new game.")
+        return 30, 100, []  # Default starting values
+
+    with open(filename, 'r') as file:
+        game_data = json.load(file)
+
+    current_hp = game_data.get('current_hp', 30)
+    current_gold = game_data.get('current_gold', 100)
+    inventory = game_data.get('inventory', [])
+
+    print(f"Game loaded from {filename}.")
+    return current_hp, current_gold, inventory
 
 
 def shop(current_gold: float, inventory: list) -> float:
@@ -62,7 +94,6 @@ def equip_item(inventory: list) -> None:
         print("Invalid choice.")
 
 
-
 def display_status(current_hp: int, current_gold: float, inventory: list) -> None:
     """Display current HP, Gold, and Inventory."""
     print(f"Current HP: {current_hp}, Current Gold: {current_gold}")
@@ -71,15 +102,16 @@ def display_status(current_hp: int, current_gold: float, inventory: list) -> Non
         print(f"- {item['name']} (Type: {item['type']})")
     print()
 
+
 def get_user_choice() -> int:
     """Get a valid choice from the user."""
     while True:
         try:
-            choice = int(input("What would you like to do?\n1) Fight Monster\n2) Sleep (Restore HP for 5 Gold)\n3) Shop\n4) Equip Item\n5) Quit\n"))
-            if choice in [1, 2, 3, 4, 5]:
+            choice = int(input("What would you like to do?\n1) Fight Monster\n2) Sleep (Restore HP for 5 Gold)\n3) Shop\n4) Equip Item\n5) Save and Quit\n6) Quit\n"))
+            if choice in [1, 2, 3, 4, 5, 6]:
                 return choice
             else:
-                print("Invalid choice. Please enter a number between 1 and 5.")
+                print("Invalid choice. Please enter a number between 1 and 6.")
         except ValueError:
             print("Please enter a valid number.")
 
@@ -109,6 +141,7 @@ def fight_monster(current_hp: int, current_gold: float, inventory: list) -> (int
 
     return current_hp, current_gold
 
+
 def sleep(current_hp: int, current_gold: float) -> (int, float):
     """Restore HP by sleeping."""
     if current_gold >= 5:
@@ -119,14 +152,24 @@ def sleep(current_hp: int, current_gold: float) -> (int, float):
         print("Not enough gold to sleep.")
     return current_hp, current_gold
 
+
 def main():
     """Main function to run the game."""
-    player_name = input("Enter your name: ")
-    print_welcome(player_name)
+    print("Welcome to the Adventure Game!")
+    choice = input("Do you want to (1) Start a new game or (2) Load a saved game? ")
 
-    current_hp = 30  # Starting HP
-    current_gold = 100  # Starting Gold
-    inventory = []  # Start with an empty inventory
+    if choice == '1':
+        player_name = input("Enter your name: ")
+        print_welcome(player_name)
+        current_hp = 30  # Starting HP
+        current_gold = 100  # Starting Gold
+        inventory = []  # Start with an empty inventory
+    elif choice == '2':
+        filename = input("Enter the save file name to load: ")
+        current_hp, current_gold, inventory = load_game(filename)
+    else:
+        print("Invalid choice. Exiting.")
+        return
 
     while True:
         display_status(current_hp, current_gold, inventory)
@@ -141,8 +184,14 @@ def main():
         elif choice == 4:
             equip_item(inventory)  # Equip an item
         elif choice == 5:
+            filename = input("Enter filename to save your game: ")
+            save_game(filename, current_hp, current_gold, inventory)
+            break
+        elif choice == 6:
             print("Thanks for playing!")
             break
 
+
 if __name__ == "__main__":
     main()
+
