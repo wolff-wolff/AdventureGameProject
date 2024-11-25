@@ -14,6 +14,34 @@ shop_items = [
     {"name": "magic stone", "type": "consumable", "effect": "defeats one monster without loss of HP", "price": 20}
 ]
 
+GRID_SIZE = 5  # Define grid size
+
+class WanderingMonster:
+    """Class to represent a wandering monster in the game."""
+
+    def __init__(self, x: int, y: int, name: str, health: int, money: int):
+        self.x = x  # Monster's x-coordinate
+        self.y = y  # Monster's y-coordinate
+        self.name = name
+        self.health = health
+        self.money = money
+
+    def move(self):
+        """Move the monster randomly within the grid bounds."""
+        direction = random.choice(['up', 'down', 'left', 'right'])
+
+        if direction == 'up' and self.y > 0:
+            self.y -= 1
+        elif direction == 'down' and self.y < GRID_SIZE - 1:
+            self.y += 1
+        elif direction == 'left' and self.x > 0:
+            self.x -= 1
+        elif direction == 'right' and self.x < GRID_SIZE - 1:
+            self.x += 1
+
+    def get_position(self):
+        """Returns the current position of the monster."""
+        return self.x, self.y
 
 def save_game(filename: str, current_hp: int, current_gold: float, inventory: list) -> None:
     """Save the game state to a file in JSON format."""
@@ -26,7 +54,6 @@ def save_game(filename: str, current_hp: int, current_gold: float, inventory: li
     with open(filename, 'w') as file:
         json.dump(game_data, file)
     print(f"Game saved to {filename}.")
-
 
 def load_game(filename: str) -> (int, float, list):
     """Load the game state from a file."""
@@ -43,7 +70,6 @@ def load_game(filename: str) -> (int, float, list):
 
     print(f"Game loaded from {filename}.")
     return current_hp, current_gold, inventory
-
 
 def shop(current_gold: float, inventory: list) -> float:
     """Display shop items and allow the player to purchase them."""
@@ -71,7 +97,6 @@ def shop(current_gold: float, inventory: list) -> float:
 
     return current_gold
 
-
 def equip_item(inventory: list) -> None:
     """Allow the player to equip an item from their inventory."""
     weapon_choices = [item for item in inventory if item['type'] == 'weapon']
@@ -93,7 +118,6 @@ def equip_item(inventory: list) -> None:
     else:
         print("Invalid choice.")
 
-
 def display_status(current_hp: int, current_gold: float, inventory: list) -> None:
     """Display current HP, Gold, and Inventory."""
     print(f"Current HP: {current_hp}, Current Gold: {current_gold}")
@@ -101,7 +125,6 @@ def display_status(current_hp: int, current_gold: float, inventory: list) -> Non
     for item in inventory:
         print(f"- {item['name']} (Type: {item['type']})")
     print()
-
 
 def get_user_choice() -> int:
     """Get a valid choice from the user."""
@@ -114,7 +137,6 @@ def get_user_choice() -> int:
                 print("Invalid choice. Please enter a number between 1 and 6.")
         except ValueError:
             print("Please enter a valid number.")
-
 
 def fight_monster(current_hp: int, current_gold: float, inventory: list) -> (int, float):
     """Handle fighting a monster."""
@@ -141,7 +163,6 @@ def fight_monster(current_hp: int, current_gold: float, inventory: list) -> (int
 
     return current_hp, current_gold
 
-
 def sleep(current_hp: int, current_gold: float) -> (int, float):
     """Restore HP by sleeping."""
     if current_gold >= 5:
@@ -152,31 +173,91 @@ def sleep(current_hp: int, current_gold: float) -> (int, float):
         print("Not enough gold to sleep.")
     return current_hp, current_gold
 
+def encounter_with_monster(monster: WanderingMonster, current_hp: int, current_gold: float) -> (int, float):
+    """Handle the encounter when the player and the monster are at the same location."""
+    print(f"You encounter a {monster.name} at position ({monster.x}, {monster.y}) with {monster.health} HP!")
 
-def main():
-    """Main function to run the game."""
-    print("Welcome to the Adventure Game!")
-    choice = input("Do you want to (1) Start a new game or (2) Load a saved game? ")
+    while current_hp > 0 and monster.health > 0:
+        damage_to_monster = random.randint(5, 10)
+        damage_to_player = random.randint(3, 8)
 
-    if choice == '1':
-        player_name = input("Enter your name: ")
-        print_welcome(player_name)
-        current_hp = 30  # Starting HP
-        current_gold = 100  # Starting Gold
-        inventory = []  # Start with an empty inventory
-    elif choice == '2':
-        filename = input("Enter the save file name to load: ")
-        current_hp, current_gold, inventory = load_game(filename)
+        monster.health -= damage_to_monster
+        current_hp -= damage_to_player
+
+        print(f"You deal {damage_to_monster} damage to the {monster.name}.")
+        print(f"The {monster.name} deals {damage_to_player} damage to you.")
+
+    if monster.health <= 0:
+        print(f"You defeated the {monster.name}!")
+        current_gold += monster.money
+    elif current_hp <= 0:
+        print("You have been defeated.")
+
+    return current_hp, current_gold
+
+def move_player(player_x, player_y):
+    """Prompt the player to move and update their position."""
+    print(f"Your current position: ({player_x}, {player_y})")
+    move = input("Which direction would you like to move? (up/down/left/right): ").lower()
+
+    if move == "up" and player_y > 0:
+        player_y -= 1
+    elif move == "down" and player_y < GRID_SIZE - 1:
+        player_y += 1
+    elif move == "left" and player_x > 0:
+        player_x -= 1
+    elif move == "right" and player_x < GRID_SIZE - 1:
+        player_x += 1
     else:
-        print("Invalid choice. Exiting.")
-        return
+        print("Invalid move or you've hit the boundary.")
 
+    return player_x, player_y
+def main():
+    print("Welcome to the Adventure Game!")
+
+    # Loop until the user enters a valid choice (1 or 2)
+    while True:
+        choice = input("Do you want to (1) Start a new game or (2) Load a saved game? ")
+
+        if choice == '1':
+            player_name = input("Enter your name: ")
+            print_welcome(player_name)
+            current_hp = 30  # Starting HP
+            current_gold = 100  # Starting Gold
+            inventory = []  # Start with an empty inventory
+            player_x, player_y = 2, 2  # Start player at center of grid
+            monsters = [WanderingMonster(random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1), "Goblin", 20, 10)]  # Initialize monsters
+            break  # Exit the loop to proceed with the game
+
+        elif choice == '2':
+            filename = input("Enter the save file name to load: ")
+            current_hp, current_gold, inventory = load_game(filename)
+            player_x, player_y = 2, 2  # Start player at center of grid if loaded
+            monsters = [WanderingMonster(random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1), "Goblin", 20, 10)]  # Initialize monsters
+            break  # Exit the loop to proceed with the game
+
+        else:
+            print("Invalid choice. Please enter '1' to start a new game or '2' to load a saved game.")
+
+    # Main game loop
     while True:
         display_status(current_hp, current_gold, inventory)
+
+        # Call the move_player function each turn to move the player
+        player_x, player_y = move_player(player_x, player_y)
+
         choice = get_user_choice()
 
         if choice == 1:
-            current_hp, current_gold = fight_monster(current_hp, current_gold, inventory)
+            # Check if player is at the same position as any monster
+            for monster in monsters:
+                if (player_x, player_y) == monster.get_position():
+                    current_hp, current_gold = encounter_with_monster(monster, current_hp, current_gold)
+                    if current_hp <= 0:
+                        print("You have been defeated.")
+                        return
+                    break
+
         elif choice == 2:
             current_hp, current_gold = sleep(current_hp, current_gold)
         elif choice == 3:
@@ -191,7 +272,25 @@ def main():
             print("Thanks for playing!")
             break
 
+        # Move monsters
+        for monster in monsters:
+            monster.move()
+
+        # Check if player encounters any monster
+        for monster in monsters:
+            if (player_x, player_y) == monster.get_position():
+                current_hp, current_gold = encounter_with_monster(monster, current_hp, current_gold)
+                if current_hp <= 0:
+                    print("You have been defeated.")
+                    return
+
+        # If all monsters are defeated, spawn new monsters
+        if all(monster.health <= 0 for monster in monsters):
+            print("All monsters defeated! New monsters are appearing!")
+            monsters = [
+                WanderingMonster(random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1), "Goblin", 20, 10),
+                WanderingMonster(random.randint(0, GRID_SIZE-1), random.randint(0, GRID_SIZE-1), "Orc", 25, 15)
+            ]
 
 if __name__ == "__main__":
-    main()
-
+    main()  # This runs the main game function
